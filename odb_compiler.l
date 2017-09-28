@@ -4,22 +4,32 @@ letter	[A-Za-z]
 %{
 	#include <stdlib.h>
 	#include <string.h>
-	#include "y.tab.h"
 %}
 %option yylineno
 %%
-(letter)({letter}|{digit}|_)*		{ strcpy(yylval.id, yytext); printf("identifier found %s", yytext);}
-(digit)+						{ yylval.intval = atoi(yytext); printf("int numeric found %d",yytext);}
-(digit)+"."(digit)+				{ yylval.floatval = atoi(yytext); printf("float numeric found %f",yytext);}
+
+[0-9]+ 			{
+		printf( " Integer : %s(%d)" , yytext, atoi(yytext));
+		}
+
+[0-9]+"."[0-9]*     	{
+                printf( "A float: %s (%g)"  , yytext, atof( yytext ) );
+                }
+
+[A-Za-z]([A-Za-z]|[0-9]|"_")*	{
+		printf( " Identifier: %s" , yytext);
+		}
+
 %%
 
-int yywrap(void){
-	return 1;
-}
-
-
-int main(void)
-{
+main(argc, argv)
+int argc;
+char **argv;
+{	
+	++argv, -argc;
+	if ( argc > 0 )
+		yyin = fopen( argv[0], "r");
+	else
+		yyin = stdin;
 	yylex();
-	return 0;
 }
