@@ -1,14 +1,12 @@
  /* definitions */
 digit	[0-9]
 letter	[A-Za-z]
+
 %{
 	#include <stdlib.h>
-	#include <string.h>
-	enum {
-		ID = 0,
-		INTEGER = 1,
-		FLOAT = 2
-	};
+	void yyerror(char *);
+	#include "type_def.h"
+	#include "y.tab.h"
 
 	int number = 0;
 	int token_type[100];
@@ -18,7 +16,9 @@ letter	[A-Za-z]
 %}
 %option yylineno
 
+
 %%
+
 
 [0-9]+ 			{
 
@@ -27,13 +27,16 @@ letter	[A-Za-z]
 		if ( table_num == -1 ){
 			token[number] = copy(yytext, token[number]);
 			token_type[number] = INTEGER;
-			printf( "[%s]", token[number]);
+			//printf( "[%s]", token[number]);
 			number++;
 			}
 		else{
-			printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
-			}		
-		}
+			//printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
+			}
+		yylval.iValue = atoi(yytext);
+		return INTEGER;	
+}
+
 
 [0-9]+"."[0-9]*     	{
 		table_num = check_table(token, number, yytext);
@@ -41,13 +44,17 @@ letter	[A-Za-z]
 		if ( table_num == -1 ){
 			token[number] = copy(yytext, token[number]);
 			token_type[number] = FLOAT;
-			printf( "[%s]", token[number]);
+			//printf( "[%s]", token[number]);
 			number++;
 			}
 		else{
-			printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
+			//printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
 			}
-                }
+		yylval.fValue = atof(yytext);
+		printf("%f",atof(yytext));
+		return FLOAT;
+}
+
 
 [A-Za-z]([A-Za-z]|[0-9]|"_")*	{
 		table_num = check_table(token, number, yytext);
@@ -55,33 +62,33 @@ letter	[A-Za-z]
 		if ( table_num == -1 ){
 			token[number] = copy(yytext, token[number]);
 			token_type[number] = ID;
-			printf( "[%s]", token[number]);
+			//printf( "[%s]", token[number]);
 			number++;
 			}
 		else{
-			printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
+			//printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
 			}
-		}
+		yylval.sIndex = *yytext - 'a';
+		return ID;
+}
+
+ /* operators */
+
+[-+()=/*;{}]	{
+		return *yytext;
+}
+
+ /* white space skip */
+[ \t\n]+	;
+
+.			yyerror("Unknown character");
+
 
 %%
 
-main(argc, argv)
-int argc;
-char **argv;
-{	
-	++argv, -argc;
-	if ( argc > 0 )
-		yyin = fopen( argv[0], "r");
-	else
-		yyin = stdin;
-	yylex();
 
-
-	printf("\n\nSYMBOL TABLE :: \n");
-	int i = 0;
-	for ( i = 0 ; i < number ; i ++ ){
-		printf("<%d::%s,%d>\n", i,token[i],token_type[i]);
-	}
+int yywrap(void) {
+	return 1;
 }
 
 
@@ -96,7 +103,7 @@ int check_table(char* token_table[], int number, char* yytext){
 	int i = 0;
 
 	for( i = 0 ; i < number ; i ++ ){
-		if( strcmp(token_table[i],yytext) == 0 )
+		if( strcmp(token_table[i], yytext) == 0 )
 			return i;
 	}
 
