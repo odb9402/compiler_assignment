@@ -3,6 +3,8 @@
 #include "y.tab.h"
 
 double ex(nodeType *p){
+	double value;
+	
 	if (!p)
 		return 0;
 
@@ -22,30 +24,36 @@ double ex(nodeType *p){
 		switch(p->opr.oper){
 		
 		/* End of */
-		case ';':{
+		case END:{
 			ex(p->opr.op[0]);
 			return ex(p->opr.op[1]);
 			}
 	
 		/* terminal */
-		case '=':
+		case EQ:
 			return sym[p->opr.op[0]->id.index] = ex(p->opr.op[1]);
 
 		case UMINUS:
 			return -ex(p->opr.op[0]);
 
-		case '+':
+		case PLUS:
 			return ex(p->opr.op[0]) + ex(p->opr.op[1]);
 		
-		case '-':
+		case MINUS:
 			return ex(p->opr.op[0]) - ex(p->opr.op[1]);
 
-		case '*':
+		case MULT:
 			return ex(p->opr.op[0]) * ex(p->opr.op[1]);
 
-		case '/':
+		case DIVIDE:
 			return ex(p->opr.op[0]) / ex(p->opr.op[1]);
-		
+
+		case ABSOLUTE:
+			value = ex(p->opr.op[0]);
+			if( value < 0 )
+				return -1 * value;
+			else
+				return value;
 		}
 	}
 

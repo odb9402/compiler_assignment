@@ -19,6 +19,9 @@ letter	[A-Za-z]
 
 %%
 
+"abs"	{
+	return RES_ABS;
+}
 
 [0-9]+ 			{
 
@@ -51,7 +54,6 @@ letter	[A-Za-z]
 			//printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
 			}
 		yylval.fValue = atof(yytext);
-		printf("%f",atof(yytext));
 		return FLOAT;
 }
 
@@ -68,6 +70,12 @@ letter	[A-Za-z]
 		else{
 			//printf("<%d::%s,%d>", table_num,token[table_num],token_type[table_num]);
 			}
+		
+		int i;
+		
+		//if ((i = resWord(yytext)) != 0)
+		//		return (i);
+
 		yylval.sIndex = *yytext - 'a';
 		return ID;
 }
@@ -80,6 +88,7 @@ letter	[A-Za-z]
 
  /* white space skip */
 [ \t\n]+	;
+
 
 .			yyerror("Unknown character");
 

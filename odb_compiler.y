@@ -28,6 +28,7 @@
 %token <iValue> INTEGER
 %token <fValue> FLOAT
 %token <sIndex> ID
+%token RES_ABS
 
 %left '+' '-'
 %left '*' '/'
@@ -39,37 +40,40 @@
 %%
 
 program:
-	function	{ exit(0); }
+	function					{ exit(0); }
 	;
 
+ /*In function which mean the sentence before the ';',
+  start to depth-first execution about parse-tree.*/
+
 function:
-	function statement	{ ex($2); freeNode($2); }
+	function statement			{ ex($2); freeNode($2); }
 	| /*NULL*/
 	;
 
 statement:
-		';'	{ $$ = opr(';', 2, NULL, NULL); }
-	| expr ';'	{ $$ = $1; }
-	| ID '=' expr ';' { $$ = opr('=', 2, id($1), $3); }
-	
-	| '{' statement_list '}' { $$ = $2; }
+		';'						{ $$ = opr(END, 2, NULL, NULL); }
+	| expr ';'					{ $$ = $1; }
+	| ID '=' expr ';'			{ $$ = opr(EQ, 2, id($1), $3); }
+	| '{' statement_list '}'	{ $$ = $2; }
 	;
 
 statement_list:
-	statement { $$ = $1; }
-	| statement_list statement { $$ = opr(';', 2, $1, $2); }
+	statement 					{ $$ = $1; }
+	| statement_list statement	{ $$ = opr(END, 2, $1, $2); }
 	;
 
 expr:
-	FLOAT	{ $$ = float_con($1);}
-	| INTEGER	{ $$ = int_con($1); }
-	| ID		{ $$ = id($1); }
+	FLOAT					{ $$ = float_con($1);}
+	| INTEGER				{ $$ = int_con($1); }
+	| ID					{ $$ = id($1); }
 	| '-' expr %prec UMINUS { $$ = opr(UMINUS , 1, $2); }
-	| expr '+' expr	{ $$ = opr('+', 2, $1, $3); }
-	| expr '-' expr	{ $$ = opr('-', 2, $1, $3); }
-	| expr '*' expr	{ $$ = opr('*', 2, $1, $3); }
-	| expr '/' expr	{ $$ = opr('/', 2, $1, $3); }
-	| '(' expr ')'	{ $$ = $2;}
+	| expr '+' expr			{ $$ = opr(PLUS, 2, $1, $3); }
+	| expr '-' expr			{ $$ = opr(MINUS, 2, $1, $3); }
+	| expr '*' expr			{ $$ = opr(MULT, 2, $1, $3); }
+	| expr '/' expr			{ $$ = opr(DIVIDE, 2, $1, $3); }
+	| RES_ABS expr 			{ $$ = opr(ABSOLUTE, 1, $2); }
+	| '(' expr ')'			{ $$ = $2;}
 	;
 
 %%
