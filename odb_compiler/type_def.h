@@ -53,20 +53,19 @@ typedef struct nodeTypeTag{
 } nodeType;
 
 /* symbol table elements */
-typedef struct{
+typedef struct sym_table{
 	int scope_depth;
 	int scope_order;
 
 	struct symbol{
 		int length;
 		char *sym_name;
-		value sym_val;
+		s_value sym_val;
 		symbol* next_sym;
 	}sym;
 
 	sym_table** c_table; // child tables.
-
-} sym_table
+}
 
 /* symbol table */
 extern double sym[26];
