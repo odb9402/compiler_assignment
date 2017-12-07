@@ -37,7 +37,7 @@ letter	[A-Za-z]
 
 
 [A-Za-z]([A-Za-z]|[0-9]|"_")*	{
-		yylval->sIndex = *yytext;
+		yylval.sValue = *yytext;
 		return ID;
 }
 

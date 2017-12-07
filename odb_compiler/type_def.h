@@ -4,7 +4,9 @@
 #define MULT 4
 #define DIVIDE 5
 #define END 6
-#define EQ 7
+#define EQUAL 7
+
+#define SYM_LENGTH 256
 
 typedef enum { typeInt, typeFloat, typeId, typeOpr } nodeEnum;
 
@@ -52,20 +54,25 @@ typedef struct nodeTypeTag{
 	};
 } nodeType;
 
+
+typedef struct sym{
+	char *sym_name;
+	s_value sym_val;
+	struct sym* next_sym;
+
+	int sym_hash_value;
+}symbol;
+
 /* symbol table elements */
 typedef struct sym_table{
 	int scope_depth;
 	int scope_order;
 
-	struct symbol{
-		int length;
-		char *sym_name;
-		s_value sym_val;
-		symbol* next_sym;
-	}sym;
+	struct sym sym_list_head[SYM_LENGTH];
 
-	sym_table** c_table; // child tables.
-}
+	struct sym_table** c_table; // child tables.
+
+}symbol_table;
 
 /* symbol table */
-extern double sym[26];
+//extern double sym[26];

@@ -11,10 +11,11 @@
 	void freeNode(nodeType *p);
 	int ex(nodeType *p);
 	int yylex(void);
+	symbol_table init_table();
 
 	void yyerror(char *);
 	double sym[26]; // Symbol Table.
-	nodeSymbol sym_head; //symbol_table head.
+	symbol_table sym_head; //symbol_table head.
 	sym_head = init_table();
 %}
 
@@ -22,20 +23,22 @@
 	/* Definition of YYSTYPE, it is type of yylval.*/
 
 	int iValue;		// int value
+	int addrValue;
 	double fValue;	// float value
-	char* sIndex;	// symbol table index
+	char* sValue;
+	char cValue;	// symbol table index
 	nodeType *nPtr;	// node pointer
 };
 
 %token <iValue> INTEGER
 %token <fValue> FLOAT
-%token <sIndex> ID
+%token <sValue> ID
 %token WHILE IF PRINT
 %token RES_ABS
 %nonassoc IFX
 %nonassoc ELSE
 
-%left GE LE EQ NE '>' '<'
+%left GE LE RE EQ NE '>' '<'
 %left '+' '-'
 %left '*' '/'
 %nonassoc UMINUS
@@ -86,6 +89,7 @@ expr:
 
 #define SIZEOF_NODETYPE ((char*) &p->int_const - (char*)p)
 
+
 nodeType *int_con(int value){
 	nodeType *p;
 
@@ -119,7 +123,11 @@ nodeType *id(int i){
 		yyerror("out of memory : identifier");
 
 	p->type = typeId;
-	p->id.index = i;
+	
+	// Search symbol tables by a hash table.
+
+	// If there is no symbol in the table, create new Id.
+	//p->id.index = i;
 
 	return p;
 }
@@ -148,14 +156,13 @@ nodeType *opr(int oper, int nops, ...){
 }
 
 
-sym_table init_table(){
-	sym_table head;
+symbol_table init_table(){
+	symbol_table new_symbol_table;
 	
-	head.scope_depth = 0;
-	head.scope_order = 0;
-	head.sym.length = 0;
+	new_symbol_table.scope_depth = 0;
+	new_symbol_table.scope_order = 0;
 
-	return head;
+	return new_symbol_table;
 }
 
 
@@ -181,5 +188,3 @@ int main(void) {
 	yyparse();
 	return 0;
 }
-
-
