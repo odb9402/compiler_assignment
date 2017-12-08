@@ -3,18 +3,22 @@
 	#include <stdarg.h>
 	#include <stdio.h>
 	#include "type_def.h"
-	
+
+	void yyerror(char *);
+	int yylex(void);
+	int yylineno;
+	extern FILE *yyin;
+	extern FILE *fopen(const char *filename, const char *mode);
+
 	nodeType *opr(int oper, int nops, ...);
 	nodeType *id(char* id_string);
 	nodeType *int_con(int value);
 	nodeType *float_con(double value);
 	void freeNode(nodeType *p);
 	int ex(nodeType *p);
-	int yylex(void);
 	symbol_table init_table();
 	unsigned int calc_hash_index(symbol_table table, char* name);
 
-	void yyerror(char *);
 	double sym[26]; // Symbol Table.
 	symbol_table sym_head = { .scope_depth = 0, .scope_order = 0};
 %}
@@ -30,20 +34,22 @@
 	nodeType *nPtr;	// node pointer
 };
 
+%token T_INT T_FLOAT T_CHAR T_DOUBLE
 %token <iValue> INTEGER
 %token <fValue> FLOAT
 %token <sValue> ID
-%token WHILE IF PRINT
+%token WHILE IF PRINT FOR
 %token RES_ABS
 %nonassoc IFX
 %nonassoc ELSE
 
+%right '='
 %left GE LE RE EQ NE '>' '<'
 %left '+' '-'
 %left '*' '/'
 %nonassoc UMINUS
 
-%type <nPtr> statement expr statement_list
+%type <nPtr> statement expr statement_list function_call array_usage Type
 
 
 %%
@@ -63,7 +69,13 @@ function:
 statement:
 		';'										{ $$ = opr(END, 2, NULL, NULL); }
 	| expr ';'									{ $$ = $1; }
+	| function_call								{}
+	| array_usage								{}
+	| Type ID ';'								{}
+	| Type ID '=' expr							{}
+	| Type array_usage ';'						{}
 	| PRINT expr ';'							{ $$ = opr(PRINT, 1, $2);}
+	| FOR '(' expr ';' expr ';' expr ')' statement	{ $$ = opr(FOR, 4 , $3, $5, $7, $9);}
 	| WHILE '(' expr ')' statement 				{ $$ = opr(WHILE, 2, $3, $5);}
 	| IF '(' expr ')' statement					{ $$ = opr(IF, 2, $3, $5);}
 	| IF '(' expr ')' statement ELSE statement	{ $$ = opr(IF, 3, $3, $5, $7);}
@@ -96,6 +108,20 @@ expr:
 	| '(' expr ')'								{ $$ = $2;}
 	;
 
+function_call:
+	ID'('')'									{}
+	| ID'('expr')'								{}
+	;
+
+array_usage:
+	ID'['INTEGER']'								{}
+	;
+
+Type: T_INT										{}
+	| T_FLOAT									{}
+	| T_CHAR									{}
+	| T_DOUBLE									{}
+	;
 %%
 
 #define SIZEOF_NODETYPE ((char*) &p->int_const - (char*)p)
@@ -129,18 +155,36 @@ nodeType *float_con(double value){
 
 nodeType *id(char* id_string){
 	nodeType *p;
+	int table_index = 0;
+	s_value value;
 
 	if ((p = malloc(sizeof(nodeType))) == NULL)
 		yyerror("out of memory : identifier");
 
-	p->type = typeId;
-	p->id.name = id_string;
-
+	table_index = calc_hash_index(sym_head, id_string);
 	// Search symbol tables by a hash table.
+	if(sym_head.sym_hash[table_index].sym_name == NULL)
+		value = sym_head.sym_hash[table_index].sym_val;
+	// If there is no symbol in the table, error.
+	else
+		printf("Identifier [%s] was not assigned.", id_string);
+		yyerror("Identifier was not assigned.");
+
+	p->id.name = id_string;
+	p->id.sym_index = table_index;
+
+	return p;
+}
 
 
-	// If there is no symbol in the table, create new Id.
+nodeType *assign(char* id_string, int type){
+	nodeType *p;
+	int table_index = 0;
+	s_value value;
 
+	if ((p = malloc(sizeof(nodeType))) == NULL)
+		yyerror("out of memory : assign");
+	
 	return p;
 }
 
@@ -167,9 +211,7 @@ nodeType *opr(int oper, int nops, ...){
 	return p;
 }
 
-/* 	Internal funcion to calculate hash for keys.
-	It's based on the DJB algorithm from Daniel J. Bernstein.
-	The key must be ended by '\0' character.*/
+
 unsigned int calc_hash_index(symbol_table table, char* name){
     unsigned int hash_index = 5381;
 	int trav_count = 0;
@@ -180,17 +222,19 @@ unsigned int calc_hash_index(symbol_table table, char* name){
 	}
     hash_index %= SYM_LENGTH;
 
-    if (table.sym_hash[hash_index].sym_name == NULL){
+    if (table.sym_hash[hash_index].sym_name == NULL ||
+			!strcmp(table.sym_hash[hash_index].sym_name, name)){
         return hash_index;
     }
     else{
-        while(table.sym_hash[hash_index].sym_name == NULL){
+        while(table.sym_hash[hash_index].sym_name == NULL ||
+				!strcmp(table.sym_hash[hash_index].sym_name, name)){
             hash_index++;
             trav_count++;
 			if(hash_index == SYM_LENGTH)
                 hash_index = 0;
 			if(trav_count == SYM_LENGTH)
-				exit("The maximum number of identifiers is 256. :: The hash table is full");
+				yyerror("The maximum number of identifiers is 256. :: The hash table is full");
 		}
 		return hash_index;
     }
@@ -209,13 +253,18 @@ void freeNode(nodeType *p){
 }
 
 
-void yyerror(char *s) {
-	fprintf(stderr, "%s\n", s);
+int main(int argc, char *argv[]) {
+	yyin = fopen(argv[1], "r");
+	if(!yyparse())
+		printf("parsing complete");
+	else
+		printf("parsing failed");
+	fclose(yyin);
 	return 0;
 }
 
 
-int main(void) {
-	yyparse();
-	return 0;
+void yyerror(char *s) {
+	printf("%d : %s  \n", yylineno, s);
+	exit(0);
 }

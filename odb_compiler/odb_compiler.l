@@ -7,21 +7,17 @@ letter	[A-Za-z]
 	void yyerror(char *);
 	#include "type_def.h"
 	#include "y.tab.h"
-
-	int number = 0;
-	int token_type[100];
-	char* token[100];
-	int table_num = 0;
-
 %}
 %option yylineno
 
 
 %%
 
-"abs"	{
-	return RES_ABS;
-}
+"int"		{ return T_INT; }
+"float"		{ return T_FLOAT; }
+"char"		{ return T_CHAR; }
+"double"	{ return T_DOUBLE; }
+"abs"		{ return RES_ABS; }
 
 [0-9]+ 			{
 
@@ -52,13 +48,14 @@ letter	[A-Za-z]
 "=="		return EQ;
 "!="		return NE;
 "while"		return WHILE;
+"for"		return FOR;
 "if"		return IF;
 "else"		return ELSE;
 "print"		return PRINT;
 
  /* white space skip */
-[ \t\n]+	;
-
+[ \t]+		;
+[ \n]		{ yylineno = yylineno + 1; }
 
 .			yyerror("Unknown character");
 
@@ -70,7 +67,7 @@ int yywrap(void) {
 	return 1;
 }
 
-
+/*
 void copy(char* yytext, char* str){
 	str = malloc(strlen(yytext)+1);
 	if ( str == NULL ) abort();
@@ -87,4 +84,4 @@ int check_table(char* token_table[], int number, char* yytext){
 	}
 
 	return -1;
-}
+}*/

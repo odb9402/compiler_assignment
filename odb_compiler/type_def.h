@@ -15,9 +15,16 @@
 
 #define WHILE_LOOP 15
 #define IF_THEN_ELSE 16
-#define PRINT_OUT 17
+#define FOR_LOOP 17
+#define PRINT_OUT 18
 
 #define SYM_LENGTH 256
+
+#define TYPE_INT 1001
+#define TYPE_FLOAT 1002
+#define TYPE_CHAR 1003
+#define TYPE_STRING 1004
+#define TYPE_FUNCTION 1005
 
 typedef enum { typeInt, typeFloat, typeId, typeOpr } nodeEnum;
 
@@ -44,6 +51,7 @@ typedef struct {
 
 /* indentifiers */
 typedef struct {
+	int sym_index;
 	char* name; //symbol_table_name;
 } idNodeType;
 
@@ -68,19 +76,14 @@ typedef struct nodeTypeTag{
 
 typedef struct sym{
 	char *sym_name;		// Key of the hash table.
+	int sym_type;
 	s_value sym_val;	// Data of the hash table.
-}symbol;
+} symbol;
 
 /* symbol table elements */
 typedef struct sym_table{
 	int scope_depth;
 	int scope_order;
-
 	struct sym sym_hash[SYM_LENGTH];
-
 	struct sym_table** c_table; // child tables.
-
-}symbol_table;
-
-/* symbol table */
-//extern double sym[26];
+} symbol_table;

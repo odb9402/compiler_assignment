@@ -76,6 +76,10 @@ double ex(nodeType *p){
 					ex(p->opr.op[1]);
 				return 0;
 
+			case FOR_LOOP:
+				for(ex(p->opr.op[0]) ; ex(p->opr.op[1]) ; ex(p->opr.op[2]))
+					ex(p->opr.op[3]);
+
 			case PRINT_OUT:
 				//print by types.
 				return 0;

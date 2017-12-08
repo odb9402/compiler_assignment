@@ -45,46 +45,56 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    INTEGER = 258,
-    FLOAT = 259,
-    ID = 260,
-    WHILE = 261,
-    IF = 262,
-    PRINT = 263,
-    RES_ABS = 264,
-    IFX = 265,
-    ELSE = 266,
-    GE = 267,
-    LE = 268,
-    RE = 269,
-    EQ = 270,
-    NE = 271,
-    UMINUS = 272
+    T_INT = 258,
+    T_FLOAT = 259,
+    T_CHAR = 260,
+    T_DOUBLE = 261,
+    INTEGER = 262,
+    FLOAT = 263,
+    ID = 264,
+    WHILE = 265,
+    IF = 266,
+    PRINT = 267,
+    FOR = 268,
+    RES_ABS = 269,
+    IFX = 270,
+    ELSE = 271,
+    GE = 272,
+    LE = 273,
+    RE = 274,
+    EQ = 275,
+    NE = 276,
+    UMINUS = 277
   };
 #endif
 /* Tokens.  */
-#define INTEGER 258
-#define FLOAT 259
-#define ID 260
-#define WHILE 261
-#define IF 262
-#define PRINT 263
-#define RES_ABS 264
-#define IFX 265
-#define ELSE 266
-#define GE 267
-#define LE 268
-#define RE 269
-#define EQ 270
-#define NE 271
-#define UMINUS 272
+#define T_INT 258
+#define T_FLOAT 259
+#define T_CHAR 260
+#define T_DOUBLE 261
+#define INTEGER 262
+#define FLOAT 263
+#define ID 264
+#define WHILE 265
+#define IF 266
+#define PRINT 267
+#define FOR 268
+#define RES_ABS 269
+#define IFX 270
+#define ELSE 271
+#define GE 272
+#define LE 273
+#define RE 274
+#define EQ 275
+#define NE 276
+#define UMINUS 277
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 22 "odb_compiler.y" /* yacc.c:1909  */
+#line 26 "odb_compiler.y" /* yacc.c:1909  */
 
 	/* Definition of YYSTYPE, it is type of yylval.*/
 
@@ -95,7 +105,7 @@ union YYSTYPE
 	char cValue;	// symbol table index
 	nodeType *nPtr;	// node pointer
 
-#line 99 "y.tab.h" /* yacc.c:1909  */
+#line 109 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
