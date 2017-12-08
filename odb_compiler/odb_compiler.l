@@ -43,7 +43,7 @@ letter	[A-Za-z]
 
  /* operators */
 
-[-+()=/*;{}]	{
+[-+()=/*;{}!]	{
 		return *yytext;
 }
 

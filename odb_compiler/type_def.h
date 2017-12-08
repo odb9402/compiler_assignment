@@ -5,6 +5,17 @@
 #define DIVIDE 5
 #define END 6
 #define EQUAL 7
+#define RIGHT_GE 8
+#define LEFT_GE 9
+#define NOT_EQUAL 10
+#define B_EQUAL 11
+#define RIGHT_G 12
+#define LEFT_G 13
+#define NOT 14
+
+#define WHILE_LOOP 15
+#define IF_THEN_ELSE 16
+#define PRINT_OUT 17
 
 #define SYM_LENGTH 256
 
@@ -56,11 +67,8 @@ typedef struct nodeTypeTag{
 
 
 typedef struct sym{
-	char *sym_name;
-	s_value sym_val;
-	struct sym* next_sym;
-
-	int sym_hash_value;
+	char *sym_name;		// Key of the hash table.
+	s_value sym_val;	// Data of the hash table.
 }symbol;
 
 /* symbol table elements */
@@ -68,7 +76,7 @@ typedef struct sym_table{
 	int scope_depth;
 	int scope_order;
 
-	struct sym sym_list_head[SYM_LENGTH];
+	struct sym sym_hash[SYM_LENGTH];
 
 	struct sym_table** c_table; // child tables.
 

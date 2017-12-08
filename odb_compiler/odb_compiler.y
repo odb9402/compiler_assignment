@@ -5,18 +5,18 @@
 	#include "type_def.h"
 	
 	nodeType *opr(int oper, int nops, ...);
-	nodeType *id(int i);
+	nodeType *id(char* id_string);
 	nodeType *int_con(int value);
 	nodeType *float_con(double value);
 	void freeNode(nodeType *p);
 	int ex(nodeType *p);
 	int yylex(void);
 	symbol_table init_table();
+	unsigned int calc_hash_index(symbol_table table, char* name);
 
 	void yyerror(char *);
 	double sym[26]; // Symbol Table.
-	symbol_table sym_head; //symbol_table head.
-	sym_head = init_table();
+	symbol_table sym_head = { .scope_depth = 0, .scope_order = 0};
 %}
 
 %union {
@@ -61,28 +61,39 @@ function:
 	;
 
 statement:
-		';'						{ $$ = opr(END, 2, NULL, NULL); }
-	| expr ';'					{ $$ = $1; }
-	| ID '=' expr ';'			{ $$ = opr(EQ, 2, id($1), $3); }
-	| '{' statement_list '}'	{ $$ = $2; }
+		';'										{ $$ = opr(END, 2, NULL, NULL); }
+	| expr ';'									{ $$ = $1; }
+	| PRINT expr ';'							{ $$ = opr(PRINT, 1, $2);}
+	| WHILE '(' expr ')' statement 				{ $$ = opr(WHILE, 2, $3, $5);}
+	| IF '(' expr ')' statement					{ $$ = opr(IF, 2, $3, $5);}
+	| IF '(' expr ')' statement ELSE statement	{ $$ = opr(IF, 3, $3, $5, $7);}
+	| ID '=' expr ';'							{ $$ = opr(EQUAL, 2, id($1), $3);}
+	| '{' statement_list '}'					{ $$ = $2; }
 	;
 
 statement_list:
-	statement 					{ $$ = $1; }
-	| statement_list statement	{ $$ = opr(END, 2, $1, $2); }
+	statement 									{ $$ = $1; }
+	| statement_list statement					{ $$ = opr(END, 2, $1, $2); }
 	;
 
 expr:
-	FLOAT					{ $$ = float_con($1);}
-	| INTEGER				{ $$ = int_con($1); }
-	| ID					{ $$ = id($1); }
-	| '-' expr %prec UMINUS { $$ = opr(UMINUS , 1, $2); }
-	| expr '+' expr			{ $$ = opr(PLUS, 2, $1, $3); }
-	| expr '-' expr			{ $$ = opr(MINUS, 2, $1, $3); }
-	| expr '*' expr			{ $$ = opr(MULT, 2, $1, $3); }
-	| expr '/' expr			{ $$ = opr(DIVIDE, 2, $1, $3); }
-	| RES_ABS expr 			{ $$ = opr(ABSOLUTE, 1, $2); }
-	| '(' expr ')'			{ $$ = $2;}
+	FLOAT										{ $$ = float_con($1);}
+	| INTEGER									{ $$ = int_con($1); }
+	| ID										{ $$ = id($1); }
+	| '-' expr %prec UMINUS 					{ $$ = opr(UMINUS , 1, $2); }
+	| expr '+' expr								{ $$ = opr(PLUS, 2, $1, $3); }
+	| expr '-' expr								{ $$ = opr(MINUS, 2, $1, $3); }
+	| expr '*' expr								{ $$ = opr(MULT, 2, $1, $3); }
+	| expr '/' expr								{ $$ = opr(DIVIDE, 2, $1, $3); }
+	| RES_ABS expr 								{ $$ = opr(ABSOLUTE, 1, $2); }
+	| '!' expr									{ $$ = opr(NOT, 1, $2);}
+	| expr RE expr								{ $$ = opr(RIGHT_GE, 2, $1, $3); }
+	| expr LE expr								{ $$ = opr(LEFT_GE, 2, $1, $3); }
+	| expr NE expr								{ $$ = opr(NOT_EQUAL, 2, $1, $3); }
+	| expr EQ expr								{ $$ = opr(B_EQUAL, 2, $1, $3); }
+	| expr '>' expr								{ $$ = opr(LEFT_G, 2, $1, $3); }
+	| expr '<' expr								{ $$ = opr(RIGHT_G, 2, $1, $3); }
+	| '(' expr ')'								{ $$ = $2;}
 	;
 
 %%
@@ -116,18 +127,19 @@ nodeType *float_con(double value){
 }
 
 
-nodeType *id(int i){
+nodeType *id(char* id_string){
 	nodeType *p;
 
 	if ((p = malloc(sizeof(nodeType))) == NULL)
 		yyerror("out of memory : identifier");
 
 	p->type = typeId;
-	
+	p->id.name = id_string;
+
 	// Search symbol tables by a hash table.
 
+
 	// If there is no symbol in the table, create new Id.
-	//p->id.index = i;
 
 	return p;
 }
@@ -155,14 +167,33 @@ nodeType *opr(int oper, int nops, ...){
 	return p;
 }
 
+/* 	Internal funcion to calculate hash for keys.
+	It's based on the DJB algorithm from Daniel J. Bernstein.
+	The key must be ended by '\0' character.*/
+unsigned int calc_hash_index(symbol_table table, char* name){
+    unsigned int hash_index = 5381;
+	int trav_count = 0;
 
-symbol_table init_table(){
-	symbol_table new_symbol_table;
-	
-	new_symbol_table.scope_depth = 0;
-	new_symbol_table.scope_order = 0;
+	while(*(name++)){
+		hash_index = ((hash_index << 5) + hash_index) + (*name);
+        printf("%d\n",hash_index);
+	}
+    hash_index %= SYM_LENGTH;
 
-	return new_symbol_table;
+    if (table.sym_hash[hash_index].sym_name == NULL){
+        return hash_index;
+    }
+    else{
+        while(table.sym_hash[hash_index].sym_name == NULL){
+            hash_index++;
+            trav_count++;
+			if(hash_index == SYM_LENGTH)
+                hash_index = 0;
+			if(trav_count == SYM_LENGTH)
+				exit("The maximum number of identifiers is 256. :: The hash table is full");
+		}
+		return hash_index;
+    }
 }
 
 

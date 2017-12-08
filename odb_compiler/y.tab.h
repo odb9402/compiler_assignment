@@ -84,7 +84,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 21 "odb_compiler.y" /* yacc.c:1909  */
+#line 22 "odb_compiler.y" /* yacc.c:1909  */
 
 	/* Definition of YYSTYPE, it is type of yylval.*/
 
