@@ -14,13 +14,16 @@
 	nodeType *id(char* id_string);
 	nodeType *int_con(int value);
 	nodeType *float_con(double value);
+	nodeType *type_con(int value);
+	nodeType *array(char* id_string, unsigned int index);
 	void freeNode(nodeType *p);
 	int ex(nodeType *p);
 	symbol_table init_table();
+	void assign(char* id_string, int type);
 	unsigned int calc_hash_index(symbol_table table, char* name);
 
-	double sym[26]; // Symbol Table.
-	symbol_table sym_head = { .scope_depth = 0, .scope_order = 0};
+	extern symbol_table sym_head = { .scope_depth = 0, .scope_order = 0};
+
 %}
 
 %union {
@@ -30,11 +33,10 @@
 	int addrValue;
 	double fValue;	// float value
 	char* sValue;
-	char cValue;	// symbol table index
 	nodeType *nPtr;	// node pointer
 };
 
-%token T_INT T_FLOAT T_CHAR T_DOUBLE
+%token T_INT T_FLOAT T_CHAR T_STRING
 %token <iValue> INTEGER
 %token <fValue> FLOAT
 %token <sValue> ID
@@ -49,13 +51,13 @@
 %left '*' '/'
 %nonassoc UMINUS
 
-%type <nPtr> statement expr statement_list function_call array_usage Type
+%type <nPtr> statement expr statement_list function_call array_usage Type declaration
 
 
 %%
 
 program:
-	function					{ exit(0); }
+	function					{ exit(0); }			
 	;
 
  /*In function which mean the sentence before the ';',
@@ -68,12 +70,9 @@ function:
 
 statement:
 		';'										{ $$ = opr(END, 2, NULL, NULL); }
+	| function_call								{ $$ = $1; }
+	| declaration								{ $$ = $1; }
 	| expr ';'									{ $$ = $1; }
-	| function_call								{}
-	| array_usage								{}
-	| Type ID ';'								{}
-	| Type ID '=' expr							{}
-	| Type array_usage ';'						{}
 	| PRINT expr ';'							{ $$ = opr(PRINT, 1, $2);}
 	| FOR '(' expr ';' expr ';' expr ')' statement	{ $$ = opr(FOR, 4 , $3, $5, $7, $9);}
 	| WHILE '(' expr ')' statement 				{ $$ = opr(WHILE, 2, $3, $5);}
@@ -88,6 +87,16 @@ statement_list:
 	| statement_list statement					{ $$ = opr(END, 2, $1, $2); }
 	;
 
+// Grammars for declarations.
+declaration:
+	Type ID ';'									{ assign($2, get_type($1)); }
+	| Type ID '=' expr ';'						{ assign($2, get_type($1)); opr(EQUAL, 2, id($2), $4); }
+	| Type array_usage ';'						{  }
+	| Type array_usage '=' expr	';'				{  }
+	;
+
+// Grammars for expression. It will return some values such as float, int
+// and r-value of identifiers.
 expr:
 	FLOAT										{ $$ = float_con($1);}
 	| INTEGER									{ $$ = int_con($1); }
@@ -114,17 +123,35 @@ function_call:
 	;
 
 array_usage:
-	ID'['INTEGER']'								{}
+	ID'['INTEGER']'								{ $$ = array($1,$3); }
 	;
 
-Type: T_INT										{}
-	| T_FLOAT									{}
-	| T_CHAR									{}
-	| T_DOUBLE									{}
+Type: T_INT										{ $$ = type_con(TYPE_INT); }
+	| T_FLOAT									{ $$ = type_con(TYPE_FLOAT); }
+	| T_CHAR									{ $$ = type_con(TYPE_CHAR); }
+	| T_STRING									{ $$ = type_con(TYPE_STRING); }
 	;
 %%
 
 #define SIZEOF_NODETYPE ((char*) &p->int_const - (char*)p)
+
+
+int get_type(nodeType* type_node){
+	return type_node->type_const.value;
+}
+
+
+nodeType *type_con(int value){
+	nodeType *p;
+
+	if ((p = malloc(sizeof(nodeType))) == NULL)
+		yyerror("out of memory : int constant");
+
+	p->type = typeTypedef;
+	p->type_const.value = value;
+	
+	return p;
+}
 
 
 nodeType *int_con(int value){
@@ -162,14 +189,12 @@ nodeType *id(char* id_string){
 		yyerror("out of memory : identifier");
 
 	table_index = calc_hash_index(sym_head, id_string);
-	// Search symbol tables by a hash table.
-	if(sym_head.sym_hash[table_index].sym_name == NULL)
-		value = sym_head.sym_hash[table_index].sym_val;
-	// If there is no symbol in the table, error.
-	else
-		printf("Identifier [%s] was not assigned.", id_string);
-		yyerror("Identifier was not assigned.");
 
+	if(sym_head.sym_hash[table_index].sym_name != NULL)
+		value = sym_head.sym_hash[table_index].sym_val;		// Search symbol tables by a hash table.
+	else{
+		yyerror("Identifier was not assigned.");			// If there is no symbol in the table, error.
+	}
 	p->id.name = id_string;
 	p->id.sym_index = table_index;
 
@@ -177,15 +202,26 @@ nodeType *id(char* id_string){
 }
 
 
-nodeType *assign(char* id_string, int type){
+nodeType *array(char* id_string, unsigned int index){
 	nodeType *p;
 	int table_index = 0;
 	s_value value;
+}
 
-	if ((p = malloc(sizeof(nodeType))) == NULL)
-		yyerror("out of memory : assign");
-	
-	return p;
+
+void assign(char* id_string, int type){
+	int table_index = 0;
+	s_value value;
+
+	table_index = calc_hash_index(sym_head, id_string);
+
+	if(sym_head.sym_hash[table_index].sym_name != NULL){
+		yyerror("Identifier was already assigned.");
+	}
+	else{
+		sym_head.sym_hash[table_index].sym_name = strdup(id_string);
+		sym_head.sym_hash[table_index].sym_type = type;
+	}
 }
 
 
@@ -218,9 +254,8 @@ unsigned int calc_hash_index(symbol_table table, char* name){
 
 	while(*(name++)){
 		hash_index = ((hash_index << 5) + hash_index) + (*name);
-        printf("%d\n",hash_index);
 	}
-    hash_index %= SYM_LENGTH;
+    hash_index = ( hash_index % SYM_LENGTH );
 
     if (table.sym_hash[hash_index].sym_name == NULL ||
 			!strcmp(table.sym_hash[hash_index].sym_name, name)){
@@ -254,12 +289,14 @@ void freeNode(nodeType *p){
 
 
 int main(int argc, char *argv[]) {
-	yyin = fopen(argv[1], "r");
+	/*yyin = fopen(argv[1], "r");
 	if(!yyparse())
 		printf("parsing complete");
 	else
 		printf("parsing failed");
 	fclose(yyin);
+	*/
+	yyparse();
 	return 0;
 }
 

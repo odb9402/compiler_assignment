@@ -48,7 +48,7 @@ extern int yydebug;
     T_INT = 258,
     T_FLOAT = 259,
     T_CHAR = 260,
-    T_DOUBLE = 261,
+    T_STRING = 261,
     INTEGER = 262,
     FLOAT = 263,
     ID = 264,
@@ -71,7 +71,7 @@ extern int yydebug;
 #define T_INT 258
 #define T_FLOAT 259
 #define T_CHAR 260
-#define T_DOUBLE 261
+#define T_STRING 261
 #define INTEGER 262
 #define FLOAT 263
 #define ID 264
@@ -94,7 +94,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 26 "odb_compiler.y" /* yacc.c:1909  */
+#line 29 "odb_compiler.y" /* yacc.c:1909  */
 
 	/* Definition of YYSTYPE, it is type of yylval.*/
 
@@ -102,10 +102,9 @@ union YYSTYPE
 	int addrValue;
 	double fValue;	// float value
 	char* sValue;
-	char cValue;	// symbol table index
 	nodeType *nPtr;	// node pointer
 
-#line 109 "y.tab.h" /* yacc.c:1909  */
+#line 108 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

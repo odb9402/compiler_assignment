@@ -5,6 +5,7 @@ letter	[A-Za-z]
 %{
 	#include <stdlib.h>
 	void yyerror(char *);
+	void copy(char* yytext, char* str);
 	#include "type_def.h"
 	#include "y.tab.h"
 %}
@@ -13,14 +14,13 @@ letter	[A-Za-z]
 
 %%
 
-"int"		{ return T_INT; }
-"float"		{ return T_FLOAT; }
-"char"		{ return T_CHAR; }
-"double"	{ return T_DOUBLE; }
-"abs"		{ return RES_ABS; }
+"int"		return T_INT;
+"float"		return T_FLOAT;
+"char"		return T_CHAR;
+"string"	return T_STRING;
+"abs"		return RES_ABS;
 
 [0-9]+ 			{
-
 		yylval.iValue = atoi(yytext);
 		return INTEGER;	
 }
@@ -33,16 +33,19 @@ letter	[A-Za-z]
 
 
 [A-Za-z]([A-Za-z]|[0-9]|"_")*	{
-		yylval.sValue = *yytext;
+		yylval.sValue = strdup(yytext);		// deep copy for passing token of an identifer.
 		return ID;
 }
 
  /* operators */
 
-[-+()=/*;{}!]	{
+
+[-+()=/*{}!]	{
+		printf("flagOP ");
 		return *yytext;
 }
 
+";"			return *yytext;
 "<="		return RE;
 ">="		return LE;
 "=="		return EQ;
@@ -62,26 +65,6 @@ letter	[A-Za-z]
 
 %%
 
-
 int yywrap(void) {
 	return 1;
 }
-
-/*
-void copy(char* yytext, char* str){
-	str = malloc(strlen(yytext)+1);
-	if ( str == NULL ) abort();
-	strcpy(str,yytext);	
-}
-
-
-int check_table(char* token_table[], int number, char* yytext){
-	int i = 0;
-
-	for( i = 0 ; i < number ; i ++ ){
-		if( strcmp(token_table[i], yytext) == 0 )
-			return i;
-	}
-
-	return -1;
-}*/

@@ -18,6 +18,9 @@
 #define FOR_LOOP 17
 #define PRINT_OUT 18
 
+#define TYPE_DEC 19
+#define ARY_TYPE_DEC 20
+
 #define SYM_LENGTH 256
 
 #define TYPE_INT 1001
@@ -26,17 +29,15 @@
 #define TYPE_STRING 1004
 #define TYPE_FUNCTION 1005
 
-typedef enum { typeInt, typeFloat, typeId, typeOpr } nodeEnum;
+typedef enum { typeInt, typeFloat, typeId, typeOpr , typeTypedef } nodeEnum;
 
 /* Value Identifier can have */
 typedef union {
-
 	int iValue;
 	int addrValue;
 	double fValue;
 	char* sValue;
 	char cValue;
-
 } s_value; 
 
 /* integer constant type */
@@ -62,6 +63,10 @@ typedef struct {
 	struct nodeTypeTag *op[1]; // operands : pointer to operands
 } oprNodeType;
 
+typedef struct {
+	int value;
+} typeDefNodeType;
+
 typedef struct nodeTypeTag{
 	nodeEnum type;
 
@@ -70,13 +75,14 @@ typedef struct nodeTypeTag{
 		floatNodeType float_const;
 		idNodeType id;
 		oprNodeType opr;
+		typeDefNodeType type_const;
 	};
 } nodeType;
 
 
 typedef struct sym{
 	char *sym_name;		// Key of the hash table.
-	int sym_type;
+	int sym_type;		// Type of the symbol.
 	s_value sym_val;	// Data of the hash table.
 } symbol;
 

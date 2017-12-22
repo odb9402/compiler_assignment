@@ -3,7 +3,7 @@
 #include "y.tab.h"
 
 double ex(nodeType *p){
-	double value;
+	double float_value;
 	
 	if (!p)
 		return 0;
@@ -31,7 +31,7 @@ double ex(nodeType *p){
 		
 			/* terminal */
 			case EQUAL:
-				//return sym[p->opr.op[0]->id.index] = ex(p->opr.op[1]);
+				sym_head.sym_hash[p->opr.op[0]->id.sym_index].sym_val = ex(p->opr.op[1]);
 				return 0;
 			case UMINUS:
 				return -ex(p->opr.op[0]);
@@ -44,11 +44,11 @@ double ex(nodeType *p){
 			case DIVIDE:
 				return ex(p->opr.op[0]) / ex(p->opr.op[1]);
 			case ABSOLUTE:
-				value = ex(p->opr.op[0]);
-				if( value < 0 )
-					return -1 * value;
+				float_value = ex(p->opr.op[0]);
+				if( float_value < 0 )
+					return -1 * float_value;
 				else
-					return value;
+					return float_value;
 			case NOT:
 				return !(ex(p->opr.op[0]));
 			case RIGHT_GE:
@@ -83,6 +83,7 @@ double ex(nodeType *p){
 			case PRINT_OUT:
 				//print by types.
 				return 0;
+
 		}
 	}
 
