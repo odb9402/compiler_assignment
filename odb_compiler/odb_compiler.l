@@ -22,7 +22,6 @@ letter	[A-Za-z]
 "abs"		return RES_ABS;
 
 while		return WHILE;
-for			return FOR;
 if			return IF;
 else		return ELSE;
 print		return PRINT;

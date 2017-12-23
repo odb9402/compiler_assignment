@@ -33,6 +33,7 @@ typedef enum { typeInt, typeFloat, typeId, typeOpr , typeTypedef } nodeEnum;
 
 /* Value Identifier can have */
 typedef union {
+	int bValue;
 	int iValue;
 	int addrValue;
 	double fValue;

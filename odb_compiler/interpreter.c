@@ -8,6 +8,7 @@ double ex(nodeType *p){
 	if (!p)
 		return 0;
 	switch(p->type){
+		
 	case typeInt:
 		return p->int_const.value;
 	

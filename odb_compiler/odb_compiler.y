@@ -41,7 +41,7 @@
 %token <iValue> INTEGER
 %token <fValue> FLOAT
 %token <sValue> ID
-%token WHILE IF PRINT FOR
+%token WHILE IF PRINT
 %token RES_ABS
 %nonassoc IFX
 %nonassoc ELSE
@@ -74,11 +74,9 @@ statement:
 	| function_call								{ $$ = $1; }
 	| declaration								{ $$ = $1; }
 	| expr ';'									{ $$ = $1; }
-	| PRINT expr ';'							{ printf("print "); $$ = opr(PRINT_OUT, 1, $2);}
-	| FOR '(' declaration  expr ';' expr ')' statement	{ printf("for "); $$ = opr(FOR_LOOP, 4 , $3, $4, $6, $8);}
-	| FOR '(' ID '=' expr ';' expr ';' expr ')' statement	{ printf("for "); $$ = opr(FOR_LOOP, 4 , $3, $4, $6, $8);}
+	| PRINT expr ';'							{ $$ = opr(PRINT_OUT, 1, $2);}
 	| WHILE '(' expr ')' statement 				{ printf("while "); $$ = opr(WHILE_LOOP, 2, $3, $5);}
-	| IF '(' expr ')' statement	%prec stmt		{ printf("if "); $$ = opr(IF_THEN_ELSE, 2, $3, $5);}
+	| IF '(' expr ')' statement	%prec IFX		{ printf("if "); $$ = opr(IF_THEN_ELSE, 2, $3, $5);}
 	| IF '(' expr ')' statement ELSE statement	{ $$ = opr(IF_THEN_ELSE, 3, $3, $5, $7);}
 	| ID '=' expr ';'							{ $$ = opr(EQUAL, 2, id($1), $3);}
 	| '{' statement_list '}'					{ $$ = $2; }
