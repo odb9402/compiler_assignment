@@ -14,11 +14,21 @@ letter	[A-Za-z]
 
 %%
 
+ /*Reserve words : { Types, Control statements }*/
 "int"		return T_INT;
 "float"		return T_FLOAT;
 "char"		return T_CHAR;
 "string"	return T_STRING;
 "abs"		return RES_ABS;
+
+while		return WHILE;
+for			return FOR;
+if			return IF;
+else		return ELSE;
+print		return PRINT;
+
+"++"		return INCR;
+"--"		return DECR;
 
 [0-9]+ 			{
 		yylval.iValue = atoi(yytext);
@@ -40,8 +50,7 @@ letter	[A-Za-z]
  /* operators */
 
 
-[-+()=/*{}!]	{
-		printf("flagOP ");
+[-()<>=+/*{}!.]	{
 		return *yytext;
 }
 
@@ -50,11 +59,6 @@ letter	[A-Za-z]
 ">="		return LE;
 "=="		return EQ;
 "!="		return NE;
-"while"		return WHILE;
-"for"		return FOR;
-"if"		return IF;
-"else"		return ELSE;
-"print"		return PRINT;
 
  /* white space skip */
 [ \t]+		;

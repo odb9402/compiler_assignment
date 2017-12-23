@@ -45,49 +45,55 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    T_INT = 258,
-    T_FLOAT = 259,
-    T_CHAR = 260,
-    T_STRING = 261,
-    INTEGER = 262,
-    FLOAT = 263,
-    ID = 264,
-    WHILE = 265,
-    IF = 266,
-    PRINT = 267,
-    FOR = 268,
-    RES_ABS = 269,
-    IFX = 270,
-    ELSE = 271,
-    GE = 272,
-    LE = 273,
-    RE = 274,
-    EQ = 275,
-    NE = 276,
-    UMINUS = 277
+    INCR = 258,
+    DECR = 259,
+    T_INT = 260,
+    T_FLOAT = 261,
+    T_CHAR = 262,
+    T_STRING = 263,
+    INTEGER = 264,
+    FLOAT = 265,
+    ID = 266,
+    WHILE = 267,
+    IF = 268,
+    PRINT = 269,
+    FOR = 270,
+    RES_ABS = 271,
+    IFX = 272,
+    ELSE = 273,
+    GE = 274,
+    LE = 275,
+    RE = 276,
+    EQ = 277,
+    NE = 278,
+    UMINUS = 279,
+    stmt = 280
   };
 #endif
 /* Tokens.  */
-#define T_INT 258
-#define T_FLOAT 259
-#define T_CHAR 260
-#define T_STRING 261
-#define INTEGER 262
-#define FLOAT 263
-#define ID 264
-#define WHILE 265
-#define IF 266
-#define PRINT 267
-#define FOR 268
-#define RES_ABS 269
-#define IFX 270
-#define ELSE 271
-#define GE 272
-#define LE 273
-#define RE 274
-#define EQ 275
-#define NE 276
-#define UMINUS 277
+#define INCR 258
+#define DECR 259
+#define T_INT 260
+#define T_FLOAT 261
+#define T_CHAR 262
+#define T_STRING 263
+#define INTEGER 264
+#define FLOAT 265
+#define ID 266
+#define WHILE 267
+#define IF 268
+#define PRINT 269
+#define FOR 270
+#define RES_ABS 271
+#define IFX 272
+#define ELSE 273
+#define GE 274
+#define LE 275
+#define RE 276
+#define EQ 277
+#define NE 278
+#define UMINUS 279
+#define stmt 280
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -104,7 +110,7 @@ union YYSTYPE
 	char* sValue;
 	nodeType *nPtr;	// node pointer
 
-#line 108 "y.tab.h" /* yacc.c:1909  */
+#line 114 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

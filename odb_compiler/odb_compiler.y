@@ -17,13 +17,13 @@
 	nodeType *type_con(int value);
 	nodeType *array(char* id_string, unsigned int index);
 	void freeNode(nodeType *p);
-	int ex(nodeType *p);
+	double ex(nodeType *p);
 	symbol_table init_table();
 	void assign(char* id_string, int type);
+	int get_type(nodeType* type_node);
 	unsigned int calc_hash_index(symbol_table table, char* name);
-
-	extern symbol_table sym_head = { .scope_depth = 0, .scope_order = 0};
-
+	void look_up_sym();
+	symbol_table sym_head;
 %}
 
 %union {
@@ -36,6 +36,7 @@
 	nodeType *nPtr;	// node pointer
 };
 
+%token INCR DECR
 %token T_INT T_FLOAT T_CHAR T_STRING
 %token <iValue> INTEGER
 %token <fValue> FLOAT
@@ -69,28 +70,29 @@ function:
 	;
 
 statement:
-		';'										{ $$ = opr(END, 2, NULL, NULL); }
+		';'										{ printf("justnull "); $$ = opr(END, 2, NULL, NULL); }
 	| function_call								{ $$ = $1; }
 	| declaration								{ $$ = $1; }
 	| expr ';'									{ $$ = $1; }
-	| PRINT expr ';'							{ $$ = opr(PRINT, 1, $2);}
-	| FOR '(' expr ';' expr ';' expr ')' statement	{ $$ = opr(FOR, 4 , $3, $5, $7, $9);}
-	| WHILE '(' expr ')' statement 				{ $$ = opr(WHILE, 2, $3, $5);}
-	| IF '(' expr ')' statement					{ $$ = opr(IF, 2, $3, $5);}
-	| IF '(' expr ')' statement ELSE statement	{ $$ = opr(IF, 3, $3, $5, $7);}
+	| PRINT expr ';'							{ printf("print "); $$ = opr(PRINT_OUT, 1, $2);}
+	| FOR '(' declaration  expr ';' expr ')' statement	{ printf("for "); $$ = opr(FOR_LOOP, 4 , $3, $4, $6, $8);}
+	| FOR '(' ID '=' expr ';' expr ';' expr ')' statement	{ printf("for "); $$ = opr(FOR_LOOP, 4 , $3, $4, $6, $8);}
+	| WHILE '(' expr ')' statement 				{ printf("while "); $$ = opr(WHILE_LOOP, 2, $3, $5);}
+	| IF '(' expr ')' statement	%prec stmt		{ printf("if "); $$ = opr(IF_THEN_ELSE, 2, $3, $5);}
+	| IF '(' expr ')' statement ELSE statement	{ $$ = opr(IF_THEN_ELSE, 3, $3, $5, $7);}
 	| ID '=' expr ';'							{ $$ = opr(EQUAL, 2, id($1), $3);}
 	| '{' statement_list '}'					{ $$ = $2; }
 	;
 
 statement_list:
 	statement 									{ $$ = $1; }
-	| statement_list statement					{ $$ = opr(END, 2, $1, $2); }
+	| statement_list statement					{ printf("end "); $$ = opr(END, 2, $1, $2); }
 	;
 
 // Grammars for declarations.
 declaration:
-	Type ID ';'									{ assign($2, get_type($1)); }
-	| Type ID '=' expr ';'						{ assign($2, get_type($1)); opr(EQUAL, 2, id($2), $4); }
+	Type ID ';'									{ assign($2, get_type($1)); $$ = id($2); }
+	| Type ID '=' expr ';'						{ assign($2, get_type($1)); $$ = opr(EQUAL, 2, id($2), $4); }
 	| Type array_usage ';'						{  }
 	| Type array_usage '=' expr	';'				{  }
 	;
@@ -183,18 +185,18 @@ nodeType *float_con(double value){
 nodeType *id(char* id_string){
 	nodeType *p;
 	int table_index = 0;
-	s_value value;
 
 	if ((p = malloc(sizeof(nodeType))) == NULL)
 		yyerror("out of memory : identifier");
 
 	table_index = calc_hash_index(sym_head, id_string);
 
-	if(sym_head.sym_hash[table_index].sym_name != NULL)
-		value = sym_head.sym_hash[table_index].sym_val;		// Search symbol tables by a hash table.
+	if(sym_head.sym_hash[table_index].sym_name != NULL){}
+		// Search symbol tables by a hash table.
 	else{
 		yyerror("Identifier was not assigned.");			// If there is no symbol in the table, error.
 	}
+	p->type = typeId;
 	p->id.name = id_string;
 	p->id.sym_index = table_index;
 
@@ -211,10 +213,9 @@ nodeType *array(char* id_string, unsigned int index){
 
 void assign(char* id_string, int type){
 	int table_index = 0;
-	s_value value;
 
 	table_index = calc_hash_index(sym_head, id_string);
-
+	
 	if(sym_head.sym_hash[table_index].sym_name != NULL){
 		yyerror("Identifier was already assigned.");
 	}
@@ -252,6 +253,9 @@ unsigned int calc_hash_index(symbol_table table, char* name){
     unsigned int hash_index = 5381;
 	int trav_count = 0;
 
+	if(strlen(name) == 1)		// If some identifiers are just having one char,
+		return name[0];			// a hash value is an ASKII code of the char. 
+
 	while(*(name++)){
 		hash_index = ((hash_index << 5) + hash_index) + (*name);
 	}
@@ -276,6 +280,11 @@ unsigned int calc_hash_index(symbol_table table, char* name){
 }
 
 
+void look_up_sym(){
+
+}
+
+
 void freeNode(nodeType *p){
 	int i;
 
@@ -289,14 +298,17 @@ void freeNode(nodeType *p){
 
 
 int main(int argc, char *argv[]) {
-	/*yyin = fopen(argv[1], "r");
-	if(!yyparse())
-		printf("parsing complete");
+	
+	if(argc == 2){
+		yyin = fopen(argv[1], "r");
+		if(!yyparse())
+			printf("parsing complete");
+		else
+			printf("parsing failed");
+		fclose(yyin);
+	}
 	else
-		printf("parsing failed");
-	fclose(yyin);
-	*/
-	yyparse();
+		yyparse();
 	return 0;
 }
 

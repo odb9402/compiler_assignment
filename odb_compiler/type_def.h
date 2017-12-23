@@ -93,3 +93,5 @@ typedef struct sym_table{
 	struct sym sym_hash[SYM_LENGTH];
 	struct sym_table** c_table; // child tables.
 } symbol_table;
+
+extern symbol_table sym_head;

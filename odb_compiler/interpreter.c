@@ -7,9 +7,7 @@ double ex(nodeType *p){
 	
 	if (!p)
 		return 0;
-
 	switch(p->type){
-	
 	case typeInt:
 		return p->int_const.value;
 	
@@ -17,22 +15,18 @@ double ex(nodeType *p){
 		return p->float_const.value;
 
 	case typeId:
-		//printf("%f\n",sym[p->id.index]);
-		//return sym[p->id.index];
-		return 0;
+		return sym_head.sym_hash[p->id.sym_index].sym_val.fValue;
 
 	case typeOpr:
 		switch(p->opr.oper){
 			/* End of statement*/
-			case END:{
+			case END:
 				ex(p->opr.op[0]);
 				return ex(p->opr.op[1]);
-				}
-		
 			/* terminal */
 			case EQUAL:
-				sym_head.sym_hash[p->opr.op[0]->id.sym_index].sym_val = ex(p->opr.op[1]);
-				return 0;
+				return sym_head.sym_hash[p->opr.op[0]->id.sym_index].sym_val.fValue = ex(p->opr.op[1]);
+				
 			case UMINUS:
 				return -ex(p->opr.op[0]);
 			case PLUS:
@@ -81,9 +75,11 @@ double ex(nodeType *p){
 					ex(p->opr.op[3]);
 
 			case PRINT_OUT:
-				//print by types.
+				printf("%f\n",ex(p->opr.op[0]));
 				return 0;
 
+			default:
+				printf("wrong operation\n");
 		}
 	}
 
