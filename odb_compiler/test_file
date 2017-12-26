@@ -1,0 +1,24 @@
+    int core = 3;
+    int control = 10;
+
+    float a = 1.0;
+    float b = -1.0;
+
+    int j = 1;
+
+    while( control < 100 ){
+        print(core);
+        print(control);
+
+        control = control + 15;
+        core = core * 2;
+    }
+
+    if( control > core ){
+        print(a);
+    }
+    else{
+        print(b);
+    }
+
+    never_assigned_var = 33 + 12;
